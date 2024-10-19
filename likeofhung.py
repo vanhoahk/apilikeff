@@ -1,11 +1,12 @@
 from flask import Flask, request, jsonify
 from main import start_like
-import asyncio
+from concurrent.futures import ThreadPoolExecutor
 
 app = Flask(__name__)
+executor = ThreadPoolExecutor(max_workers=5)
 
 @app.route('/getlike', methods=['GET'])
-async def get_like():
+def get_like():
     uid = request.args.get('uid')
 
     if uid is None:
@@ -15,13 +16,12 @@ async def get_like():
         return jsonify({"error": "UID không hợp lệ. UID phải là từ 8 đến 12 số."}), 400
 
     try:
-        # Sử dụng asyncio để chạy hàm bất đồng bộ
-        loop = asyncio.get_event_loop()
-        loop.run_in_executor(None, start_like, uid)
+        # Sử dụng ThreadPoolExecutor để chạy hàm trong một luồng riêng biệt
+        executor.submit(start_like, uid)
         
         return jsonify({
             "Dev": "HVH VZ",
-            "status": "Đã buff like thành công cho id dưới",
+            "status": "Đã buff like thành công",
             "id": uid,
             "game": "Free Fire"
         }), 200
