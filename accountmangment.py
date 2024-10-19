@@ -1,45 +1,42 @@
-import requests
+import sqlite3
 import random
 
-# Define the API URL
-API_URL = 'https://hasaki.io.vn/tests/test.php'
-
+# Connect to the SQLite database
 def load():
-    # No need for database connection, we will fetch from API
-    pass
+    conn = sqlite3.connect('acc.db')
+    cursor = conn.cursor()
 
-def fetch_accounts_from_api():
-    response = requests.get(API_URL)
-    if response.status_code == 200:
-        # Assuming the API returns a JSON array of accounts
-        return response.json()
-    else:
-        print(f"Error fetching data from API: {response.status_code}")
-        return []
+    # Create a table for demonstration purposes (if not exists)
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS accounts (
+            id TEXT PRIMARY KEY,
+            password TEXT NOT NULL
+        )
+    ''')
+    conn.commit()
+    return cursor, conn
 
 def get_random_accounts(n=101):
-    accounts = fetch_accounts_from_api()
-    if accounts:  # Ensure accounts is not empty
-        if len(accounts) > n:
-            accounts = random.sample(accounts, n)
-        return accounts
-    return []
+    cursor, conn = load()
+    cursor.execute('SELECT id, password FROM accounts')
+    accounts = cursor.fetchall()
+    if len(accounts) > n:
+        accounts = random.sample(accounts, n)
+    return accounts
 
 def get_random_account(n=2):
-    accounts = fetch_accounts_from_api()
-    if accounts:  # Ensure accounts is not empty
-        if len(accounts) > n:
-            accounts = random.sample(accounts, n)
-        return accounts
-    return []
+    cursor, conn = load()
+    cursor.execute('SELECT id, password FROM accounts')
+    accounts = cursor.fetchall()
+    if len(accounts) > n:
+        accounts = random.sample(accounts, n)
+    return accounts
 
 def delete_account_by_id(account_id):
-    # For deleting an account, assuming the API supports it
-    delete_url = f"{API_URL}/delete/{account_id}"  # Update this URL based on your API specification
-    response = requests.delete(delete_url)
-    if response.status_code == 200:
-        print(f"Account {account_id} deleted successfully.")
-    else:
-        print(f"Error deleting account: {response.status_code}")
+    cursor, conn = load()
+    cursor.execute('DELETE FROM accounts WHERE id = ?', (account_id,))
+    conn.commit()
 
-# Example usage for getting random accounts
+# Function to generate a guest token
+def guest_token():
+    return f"guest_{random.randint(1000, 9999)}"
