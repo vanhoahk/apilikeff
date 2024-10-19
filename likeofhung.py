@@ -16,9 +16,9 @@ def get_like():
         return jsonify({"error": "UID không hợp lệ. UID phải là từ 8 đến 12 số."}), 400
 
     try:
-        # Sử dụng ThreadPoolExecutor để chạy hàm trong một luồng riêng biệt
-        executor.submit(start_like, uid)
-        
+        # Gọi trực tiếp hàm để kiểm tra
+        start_like(uid)
+
         return jsonify({
             "Dev": "HVH VZ",
             "status": "Đã buff like thành công",
@@ -26,4 +26,5 @@ def get_like():
             "game": "Free Fire"
         }), 200
     except Exception as e:
+        print(f"Error: {e}")  # Thêm dòng log lỗi nếu có
         return jsonify({"error": "Đang trục chặc kỹ thuật."}), 500
