@@ -21,7 +21,7 @@ async def get_like():
         
         return jsonify({
             "Dev": "HVH VZ",
-            "status": "Đã buff like thành công",
+            "status": "Đã buff like thành công cho id dưới",
             "id": uid,
             "game": "Free Fire"
         }), 200
