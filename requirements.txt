@@ -2,6 +2,5 @@ protobuf_decoder
 pycryptodome
 Flask
 requests
-gunicorn
 
 
