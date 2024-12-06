@@ -1,19 +1,8 @@
 from flask import Flask, request, jsonify
 from main import start_like
 import threading
-import requests
-import time
 
 app = Flask(__name__)
-
-def keep_alive():
-    # Hàm này sẽ gửi yêu cầu đến chính ứng dụng mỗi 5 phút
-    while True:
-        try:
-            requests.get("https://<your-render-url>/ping")
-        except Exception as e:
-            print("Không thể giữ kết nối:", e)
-        time.sleep(300)  # 300 giây = 5 phút
 
 @app.route('/getlike', methods=['GET'])
 def get_like():
@@ -44,7 +33,4 @@ def ping():
     return "OK", 200
 
 if __name__ == "__main__":
-    # Khởi chạy luồng để giữ ứng dụng hoạt động
-    keep_alive_thread = threading.Thread(target=keep_alive)
-    keep_alive_thread.start()
     app.run(host='0.0.0.0', port=8000)
