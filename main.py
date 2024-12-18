@@ -112,132 +112,37 @@ def TOKEN_MAKER(OLD_ACCESS_TOKEN , NEW_ACCESS_TOKEN , OLD_OPEN_ID , NEW_OPEN_ID,
         "Content-Length": str(len(Final_Payload.hex())),
         "User-Agent": "Dalvik/2.1.0 (Linux; U; Android 9; SM-N975F Build/PI)",
         "Host": "loginbp.common.ggbluefox.com",
-import json
-import os
-import requests
-import base64
-import threading
-import time
-from datetime import datetime
-from byte import encrypt_api, decrypt_api
-from accountmangment import get_random_accounts, delete_account_by_id
-from like import like
-
-# Utility Functions
-def dec_to_hex(value):
-    """Converts a decimal number to a zero-padded hexadecimal string."""
-    return f"{value:02x}"
-
-def convert_to_hex(payload):
-    """Converts a byte payload to a hex string."""
-    return ''.join([f"{byte:02x}" for byte in payload])
-
-def convert_to_bytes(payload_hex):
-    """Converts a hex string back to bytes."""
-    return bytes.fromhex(payload_hex)
-
-# Main Functions
-def get_login_data(jwt_token, payload):
-    """Fetches login data from the server."""
-    url = 'https://clientbp.common.ggbluefox.com/GetLoginData'
-    headers = {
-        'Expect': '100-continue',
-        'Authorization': f'Bearer {jwt_token}',
-        'X-Unity-Version': '2018.4.11f1',
-        'X-GA': 'v1 1',
-        'ReleaseVersion': 'OB43',
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'User-Agent': 'Dalvik/2.1.0 (Linux; U; Android 9; G011A Build/PI)',
-        'Host': 'clientbp.common.ggbluefox.com',
-        'Connection': 'close',
-        'Accept-Encoding': 'gzip, deflate, br',
-    }
-    response = requests.post(url, headers=headers, data=payload)
-    return response.text[60:] if response.ok else None
-
-def get_payload_by_data(jwt_token, new_access_token):
-    """Generates a payload for authentication."""
-    token_payload_base64 = jwt_token.split('.')[1]
-    token_payload_base64 += '=' * ((4 - len(token_payload_base64) % 4) % 4)
-    decoded_payload = json.loads(base64.urlsafe_b64decode(token_payload_base64).decode('utf-8'))
-    
-    new_external_id = decoded_payload['external_id']
-    signature_md5 = decoded_payload['signature_md5']
-    formatted_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    
-    payload = (b'\x1a\x132023-12-24 04:21:34"...(truncated payload for brevity)...').replace(
-        b"2023-12-24 04:21:34", formatted_time.encode("UTF-8")
-    ).replace(
-        b"15f5ba1de5234a2e73cc65b6f34ce4b299db1af616dd1dd8a6f31b147230e5b6", new_access_token.encode("UTF-8")
-    ).replace(
-        b"4666ecda0003f1809655a7a8698573d0", new_external_id.encode("UTF-8")
-    ).replace(
-        b"7428b253defc164018c604a1ebbfebdf", signature_md5.encode("UTF-8")
-    )
-    
-    encrypted_payload = encrypt_api(payload.hex())
-    return get_login_data(jwt_token, bytes.fromhex(encrypted_payload))
-
-def guest_token(uid, password, target_uid):
-    """Fetches a guest token and processes the account."""
-    url = "https://100067.connect.garena.com/oauth/guest/token/grant"
-    headers = {
-        "Host": "100067.connect.garena.com",
-        "User-Agent": "GarenaMSDK/4.0.19P4(G011A ;Android 9;en;US;)",
-        "Content-Type": "application/x-www-form-urlencoded",
-        "Accept-Encoding": "gzip, deflate, br",
         "Connection": "close",
+        "Accept-Encoding": "gzip, deflate, br"
     }
-    data = {
-        "uid": uid,
-        "password": password,
-        "response_type": "token",
-        "client_type": "2",
-        "client_secret": "2ee44819e9b4598845141067b281621874d0d5d7af9d8f7e00c1e54715b7d1e3",
-        "client_id": "100067",
-    }
-    response = requests.post(url, headers=headers, data=data)
-    if response.ok:
-        token_data = response.json()
-        process_tokens(
-            old_access_token="37c00ba521e42f7fb8e374a2b5d07c2417e054abca6d7e0f25a83a8243f1d00a",
-            new_access_token=token_data['access_token'],
-            old_open_id="c5a8e6bfd6ff9246a9cc4e043f7f5753",
-            new_open_id=token_data['open_id'],
-            uid=uid,
-            target_uid=target_uid
-        )
-
-def process_tokens(old_access_token, new_access_token, old_open_id, new_open_id, uid, target_uid):
-    """Handles token replacement and account validation."""
-    payload = b"...(binary payload truncated for brevity)..."
-    encrypted_payload = encrypt_api(payload.hex())
-    data = bytes.fromhex(decrypt_api(encrypted_payload))
-    data = data.replace(old_open_id.encode(), new_open_id.encode())
-    data = data.replace(old_access_token.encode(), new_access_token.encode())
-    
-    final_payload = bytes.fromhex(encrypt_api(data.hex()))
-    url = "https://loginbp.common.ggbluefox.com/MajorLogin"
-    headers = {
-        "Authorization": "Bearer ",
-        "X-Unity-Version": "2018.4.11f1",
-        "ReleaseVersion": "OB46",
-        "Content-Type": "application/x-www-form-urlencoded",
-        "User-Agent": "Dalvik/2.1.0",
-        "Host": "loginbp.common.ggbluefox.com",
-        "Connection": "close",
-    }
-    response = requests.post(url, headers=headers, data=final_payload, verify=False)
-    
-    if response.ok and len(response.text) > 10:
-        base64_token = response.text.split("eyJhbGciOiJIUzI1NiIsInN2ciI6IjEiLCJ0eXAiOiJKV1QifQ", 1)[-1].split(".")[0]
-        if like(base64_token, target_uid) != 200:
+    RESPONSE = requests.post(URL, headers=headers, data=Final_Payload, verify=False)
+    if RESPONSE.status_code == 200:
+        if len(RESPONSE.text) < 10:
+            return False
+        BASE64_TOKEN = RESPONSE.text[RESPONSE.text.find("eyJhbGciOiJIUzI1NiIsInN2ciI6IjEiLCJ0eXAiOiJKV1QifQ"):-1]
+        second_dot_index = BASE64_TOKEN.find(".", BASE64_TOKEN.find(".") + 1)
+        BASE64_TOKEN = BASE64_TOKEN[:second_dot_index+44]
+        print(BASE64_TOKEN)
+        code = like(BASE64_TOKEN, account_iddd)
+        if code != 200:
             delete_account_by_id(uid)
-            for account in get_random_accounts():
-                threading.Thread(target=guest_token, args=(account[0], account[1], target_uid)).start()
+            random_accounts = get_random_account()
+            for account in random_accounts:
+                print(f"{account[0]}, {account[1]}")
+                id = account[0]
+                password = account[1]
+                tok2 = threading.Thread(target=guest_token, args=(id, password))
+                time.sleep(0.1)
+                tok2.start()
+    else:
+        return False
 
-def start_like(target_uid):
-    """Starts the liking process."""
-    for account in get_random_accounts():
-        threading.Thread(target=guest_token, args=(account[0], account[1], target_uid)).start()
-
+def start_like(uid):
+    random_accounts = get_random_accounts()
+    for account in random_accounts:
+        print(f"{account[0]}, {account[1]}")
+        id = account[0]
+        password = account[1]
+        time.sleep(0.050)
+        tok2 = threading.Thread(target=guest_token, args=(id, password, uid))
+        tok2.start()
