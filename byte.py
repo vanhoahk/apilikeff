@@ -1,4 +1,4 @@
- from Crypto.Cipher import AES
+from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad,unpad
 from protobuf_decoder.protobuf_decoder import Parser
 import json
